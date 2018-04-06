@@ -1,5 +1,8 @@
-# Howdy, bot builder!
-## When you see "Show Live" in the upper left corner, your new bot app is live.
+# FutBotCiscoSpark
+## World Cup 2018 Trivia Bot for Cisco Spark.
+
+[![license](https://img.shields.io/github/license/diegofn/botkit-spark-worldcuptrivia.svg)](https://github.com/diegofn/botkit-spark-worldcuptrivia/blob/master/LICENSE)
+
 ## Click the sunglasses to view your app, then go back to [Botkit Studio](https://studio.botkit.ai) to finish up.
 
 ### Having trouble?
