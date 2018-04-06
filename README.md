@@ -1,4 +1,4 @@
-![botlogo](https://image.winudf.com/v2/image/ZWxpbWluYXRvcmlhcy5hcHBfaWNvbl9vcHYyZDFzcQ/icon.png)
+![botlogo](https://image.winudf.com/v2/image/ZWxpbWluYXRvcmlhcy5hcHBfaWNvbl9vcHYyZDFzcQ/icon.png?w=170&fakeurl=1&type=.png)
 
 # FutBotCiscoSpark
 ## World Cup 2018 Trivia Bot for Cisco Spark.
