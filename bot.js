@@ -90,7 +90,7 @@ if (process.env.studio_token) {
           //bot.reply(message,{text:'Here is your image file', files:[receivedImageUrl]});
           
           var receivedImageUrl = message.data.files[0];
-          bot.reply(message,{text: 'I made this file for you.', files:['https://media3.giphy.com/media/1BXa2alBjrCXC/giphy.gif']});
+          bot.reply(message,{text: 'I made this file for you.', files:[message.data.files[0]]});
            
         });
       }
