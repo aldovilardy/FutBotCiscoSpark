@@ -40,10 +40,13 @@ var debug = require('debug')('botkit:main');
 // Create the Botkit controller, which controls all instances of the bot.
 var controller = Botkit.sparkbot({
     debug: true,
-    // log: true,
+    log: true,
     // limit_to_domain: ['mycompany.com'],
     // limit_to_org: 'my_cisco_org_id',
     public_address: process.env.public_address,
+    webserver: {
+        static_dir: __dirname + '/public/AttachedFiles'
+    },
     ciscospark_access_token: process.env.access_token,
     studio_token: process.env.studio_token, // get one from studio.botkit.ai to enable content management, stats, message console and more
     secret: process.env.secret, // this is an RECOMMENDED but optional setting that enables validation of incoming webhooks
@@ -64,8 +67,8 @@ require(__dirname + '/components/plugin_glitch.js')(controller);
 require('botkit-studio-metrics')(controller);
 
 var normalizedPath = require("path").join(__dirname, "skills");
-require("fs").readdirSync(normalizedPath).forEach(function(file) {
-  require("./skills/" + file)(controller);
+require("fs").readdirSync(normalizedPath).forEach(function (file) {
+    require("./skills/" + file)(controller);
 });
 
 
@@ -76,28 +79,49 @@ require("fs").readdirSync(normalizedPath).forEach(function(file) {
 // You can tie into the execution of the script using the functions
 // controller.studio.before, controller.studio.after and controller.studio.validate
 if (process.env.studio_token) {
-    controller.on('direct_message,direct_mention', function(bot, message) {
-      //if (message.original_message.files) {
-      //  bot.retrieveFileInfo(message.original_message.files[0], function(err, file_info) {
-      //    bot.reply(message,'I also got an attached file called ' + file_info.filename);
-      //  });
-      //}
-      if (message.data.files) {
-        bot.retrieveFileInfo(message.data.files[0], function(err, file_info) {
-          
-          bot.reply(message,'I got an attached file called ' + file_info.filename + ' content-type: ' + file_info['content-type'] + ' content-length: ' + file_info['content-length'] + ' url: ' + message.data.files[0]);
-          
-          //bot.reply(message,{text:'Here is your image file', files:[receivedImageUrl]});
-          
-          var receivedImageUrl = message.data.files[0];
-          bot.reply(message,{text: 'I made this file for you.', files:[message.data.files[0]]});
-           
-        });
-      }
+    controller.on('direct_message,direct_mention', function (bot, message) {
+        if (message.data.files) {
+            bot.retrieveFileInfo(message.data.files[0], function (err, file_info) {
+
+                bot.reply(message, 'I got an attached file called ' + file_info.filename + ' content-type: ' + file_info['content-type'] + ' content-length: ' + file_info['content-length'] + ' url: ' + message.data.files[0]);
+
+                //bot.reply(message,{text:'Here is your image file', files:[receivedImageUrl]});
+
+                bot.retrieveFile(message.data.files[0], function (err, file) {
+                    //fs.writeFile('./public/' + file_info.filename, file);
+
+                    fs.writeFile('public/' + file_info.filename, file, function (err) {
+                        if (err) throw err;
+                        console.log('Saved!');
+                    });
+
+                    //bot.reply(message,{text:'I return this file for you.',  files:[file]});
+                    
+                });
+
+
+                bot.retrieveFile(message.data.files[0], function (err, file) {
+
+                    //
+                    // Write file to filesystem
+                    //
+                    fs.writeFile('public/AttachedFiles' + file_info['filename'], file, 'binary', function (err) {
+                        if (err) throw err;
+                        console.log('It\'s saved!');
+                    });
+                    bot.reply(message, { text: 'I saved a file with the following content: ', files: [process.env.PUBLIC_URL + '/public/AttachedFiles/' + file_info.filename] });
+                    bot.reply(message, { text: 'I return this file for you.', files: [ process.env.PUBLIC_URL + + '/public/AttachedFiles/' + file_info.filename] });
+                });
+
+                var receivedImageUrl = message.data.files[0];
+                //bot.reply(message, { text: 'I made this file for you.', files: [message.data.files[0]] });
+
+            });
+        }
         if (message.text) {
-          bot.reply(message,{text: 'Hello', markdown: '*Hello!*'});
-          //bot.reply(message,{text:'Here is your image file of Abel Aguilar!', files:['https://paninistickeralbum.fifa.com/assets/images/stickers/large/377-41b2c6986cf8155c2252b8d01d573099482fc53762e59591cddb2d88f5c4f3a3.jpg']});
-            controller.studio.runTrigger(bot, message.text, message.user, message.channel, message).then(function(convo) {
+            bot.reply(message, { text: 'Hello', markdown: '*Hello!*' });
+            //bot.reply(message,{text:'Here is your image file of Abel Aguilar!', files:['https://paninistickeralbum.fifa.com/assets/images/stickers/large/377-41b2c6986cf8155c2252b8d01d573099482fc53762e59591cddb2d88f5c4f3a3.jpg']});
+            controller.studio.runTrigger(bot, message.text, message.user, message.channel, message).then(function (convo) {
                 if (!convo) {
                     // no trigger was matched
                     // If you want your bot to respond to every message,
@@ -109,7 +133,7 @@ if (process.env.studio_token) {
                     // use controller.studio.before('script') to set variables specific to a script
                     convo.setVar('current_time', new Date());
                 }
-            }).catch(function(err) {
+            }).catch(function (err) {
                 if (err) {
                     bot.reply(message, 'I experienced an error with a request to Botkit Studio: ' + err);
                     debug('Botkit Studio: ', err);
