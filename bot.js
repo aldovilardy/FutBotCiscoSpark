@@ -83,14 +83,14 @@ if (process.env.studio_token) {
         if (message.data.files) {
             bot.retrieveFileInfo(message.data.files[0], function (err, file_info) {
 
-                bot.reply(message, 'I got an attached file called ' + file_info.filename + ' content-type: ' + file_info['content-type'] + ' content-length: ' + file_info['content-length'] + ' url: ' + message.data.files[0]);
+                bot.reply(message, 'I got an attached filename: ' + file_info.filename + ' content-type: ' + file_info['content-type'] + ' content-length: ' + file_info['content-length'] + ' url: ' + message.data.files[0]);
 
                 //bot.reply(message,{text:'Here is your image file', files:[receivedImageUrl]});
 
                 bot.retrieveFile(message.data.files[0], function (err, file) {
                     //fs.writeFile('./public/' + file_info.filename, file);
 
-                    fs.writeFile('public/' + file_info.filename, file, function (err) {
+                    fs.writeFile('public/AttachedFiles/' + file_info.filename, file, function (err) {
                         if (err) throw err;
                         console.log('Saved!');
                     });
