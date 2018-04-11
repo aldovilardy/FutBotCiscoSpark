@@ -83,22 +83,21 @@ if (process.env.studio_token) {
         if (message.data.files) {
             bot.retrieveFileInfo(message.data.files[0], function (err, file_info) {
 
-                bot.reply(message, 'I got an attached filename: ' + file_info.filename + ' content-type: ' + file_info['content-type'] + ' content-length: ' + file_info['content-length'] + ' url: ' + message.data.files[0]);
-
-                //bot.reply(message,{text:'Here is your image file', files:[receivedImageUrl]});
-
-                bot.retrieveFile(message.data.files[0], function (err, file) {
-                    //fs.writeFile('./public/' + file_info.filename, file);
-
-                    fs.writeFile('public/AttachedFiles/' + file_info.filename, file, function (err) {
-                        if (err) throw err;
-                        console.log('Saved!');
-                    });
-                    //Hellow dummy
-
-                    //bot.reply(message,{text:'I return this file for you.',  files:[file]});
-                    
-                });
+                bot.reply(message, 'I got an attached File!');
+                bot.reply(message, 'filename: ' + file_info.filename);
+                bot.reply(message, 'content-type: ' + file_info['content-type']);
+                bot.reply(message, 'content-length: ' + file_info['content-length']);
+                bot.reply(message, 'cache-control: ' + file_info['cache-control']);
+                bot.reply(message, 'connection: ' + file_info['connection']);
+                bot.reply(message, 'content-disposition: ' + file_info['content-disposition']);
+                bot.reply(message, 'content-length: ' + file_info['content-length']);
+                bot.reply(message, 'date: ' + file_info['date']);
+                bot.reply(message, 'l5d-success-class: ' + file_info['l5d-success-class']);
+                bot.reply(message, 'server: ' + file_info['server']);
+                bot.reply(message, 'strict-transport-security: ' + file_info['strict-transport-security']);
+                bot.reply(message, 'trackingid: ' + file_info['trackingid']);
+                bot.reply(message, 'via: ' + file_info['via']);
+                bot.reply(message, 'url: ' + message.data.files[0]);
 
 
                 bot.retrieveFile(message.data.files[0], function (err, file) {
@@ -106,17 +105,14 @@ if (process.env.studio_token) {
                     //
                     // Write file to filesystem
                     //
-                    fs.writeFile('public/AttachedFiles' + file_info['filename'], file, 'binary', function (err) {
+                    fs.writeFile('public/AttachedFiles/' + file_info['filename'], file, 'binary', function (err) {
                         if (err) throw err;
                         console.log('It\'s saved!');
                     });
-                    bot.reply(message, { text: 'I saved a file with the following content: ', files: [process.env.PUBLIC_URL + '/public/AttachedFiles/' + file_info.filename] });
-                    bot.reply(message, { text: 'I return this file for you.', files: [ process.env.PUBLIC_URL + + '/public/AttachedFiles/' + file_info.filename] });
+                    var savedImageUrl = process.env.PUBLIC_URL + '/' + file_info.filename
+                    bot.reply(message, { text: 'I saved a file with the following content: ' + savedImageUrl });
+                    bot.reply(message, { text: 'I return this file for you.', files: [savedImageUrl] });
                 });
-
-                var receivedImageUrl = message.data.files[0];
-                //bot.reply(message, { text: 'I made this file for you.', files: [message.data.files[0]] });
-
             });
         }
         if (message.text) {
