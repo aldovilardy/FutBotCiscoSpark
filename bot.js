@@ -90,7 +90,6 @@ if (process.env.studio_token) {
                 bot.reply(message, 'cache-control: ' + file_info['cache-control']);
                 bot.reply(message, 'connection: ' + file_info['connection']);
                 bot.reply(message, 'content-disposition: ' + file_info['content-disposition']);
-                bot.reply(message, 'content-length: ' + file_info['content-length']);
                 bot.reply(message, 'date: ' + file_info['date']);
                 bot.reply(message, 'l5d-success-class: ' + file_info['l5d-success-class']);
                 bot.reply(message, 'server: ' + file_info['server']);

@@ -52,59 +52,51 @@ module.exports = function (controller) {
                 action: 'ask-photo'
             }, 'say-eMail');
 
-            // convo.addMessage({ 
-            //     text: '{{vars.name}}, enviame tu foto por favor.',
-            //     action: 'get-photo'
-            // }, 'ask-photo');
-
             convo.addQuestion({
                 text: '{{vars.name}}, enviame tu foto por favor.'
             }, function (res, convo) {
                 // photo has been collected...
-                convo.gotoThread('get-photo');
-            }, { key: 'photo' }, 'ask-photo');
+                if (res.data.files) {
+                    bot.retrieveFileInfo(res.data.files[0], function (err, file_info) {
+                        if (file_info['content-type'].includes('image/')) {
+                            
+                            convo.setVar('photoInfo', {
+                                'filename': file_info.filename,
+                                'content-type': file_info['content-type'],
+                                'content-length': file_info['content-length'],
+                                'cache-control': file_info['cache-control'],
+                                'connection': file_info['connection'],
+                                'content-disposition': file_info['content-disposition'],
+                                'date': file_info['date'],
+                                'l5d-success-class': file_info['l5d-success-class'],
+                                'server': file_info['server'],
+                                'strict-transport-security': file_info['strict-transport-security'],
+                                'trackingid': file_info['trackingid'],
+                                'via': file_info['via'],
+                                'ciscoSparkUrl': res.data.files[0]
+                            });
+                            convo.gotoThread('confirm-photo');
+                        }
+                        else {
+                            convo.gotoThread('error-photo');
+                        }
+                    });
+                }
+                else {
+                    convo.say(`No se puede capturar adjunto.`);
+                    convo.gotoThread('error-photo');
+                }
+            }, {key: 'photo-result'}, 'ask-photo');
 
-            // convo.beforeThread('get-photo', function (convo, next) {
-            //     var photo = convo.extractResponse('photo');
-            //     var bla = JSON.stringify(convo);
-            //     var
-            //     // photo = message;
-            //     // photo = message;
-            //     if (photo.data.files) {
-            //         convo.setVar('photo', photo);
-
-            //         bot.retrieveFileInfo(photo.data.files[0], function (err, file_info) {
-
-            //             convo.setVar('filename', file_info.filename);
-            //             convo.setVar('content-type', file_info['content-type']);
-            //             convo.setVar('content-length', file_info['content-length']);
-            //             convo.setVar('cache-control', file_info['cache-control']);
-            //             convo.setVar('connection', file_info['connection']);
-            //             convo.setVar('content-disposition', file_info['content-disposition']);
-            //             convo.setVar('content-length', file_info['content-length']);
-            //             convo.setVar('date', file_info['date']);
-            //             convo.setVar('l5d-success-class', file_info['l5d-success-class']);
-            //             convo.setVar('server', file_info['server']);
-            //             convo.setVar('strict-transport-security', file_info['strict-transport-security']);
-            //             convo.setVar('trackingid', file_info['trackingid']);
-            //             convo.setVar('via', file_info['via']);
-            //             convo.setVar('url', photo.data.files[0]);
-            //         });
-
-            //         next();
-            //     }
-            //     else {
-            //         convo.gotoThread(`error-photo`);
-            //     }
-            //});
-
-            convo.addMessage({ 
-                text: '{{vars.name}}, el nombre de la imagen es: {{vars.filename}}.'
-            }, 'get-photo');
-
-            convo.addMessage({ 
-                text: '{{vars.name}}, no se capturó la foto.'
+            convo.addMessage({
+                text: '{{vars.name}}, necesito que por favor me envíes una foto. Vamos a intentarlo de nuevo.',
+                action: 'ask-photo'
             }, 'error-photo');
+            
+
+            convo.addMessage({
+                text: '{{vars.name}}, el nombre de la imagen es: {{vars.photoInfo.filename}}. La URL cisco spark para trabajar es: {{vars.photoInfo.ciscoSparkUrl}}'
+            }, 'confirm-photo');
 
             // now, define a function that will be called AFTER the `default` thread ends and BEFORE the `completed` thread begins
 
