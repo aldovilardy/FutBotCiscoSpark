@@ -59,7 +59,7 @@ module.exports = function (controller) {
                 if (res.data.files) {
                     bot.retrieveFileInfo(res.data.files[0], function (err, file_info) {
                         if (file_info['content-type'].includes('image/')) {
-                            
+
                             convo.setVar('photoInfo', {
                                 'filename': file_info.filename,
                                 'content-type': file_info['content-type'],
@@ -86,13 +86,12 @@ module.exports = function (controller) {
                     convo.say(`No se puede capturar adjunto.`);
                     convo.gotoThread('error-photo');
                 }
-            }, {key: 'photo-result'}, 'ask-photo');
+            }, { key: 'photo-result' }, 'ask-photo');
 
             convo.addMessage({
                 text: '{{vars.name}}, necesito que por favor me envíes una foto. Vamos a intentarlo de nuevo.',
                 action: 'ask-photo'
             }, 'error-photo');
-            
 
             convo.addMessage({
                 text: '{{vars.name}}, el nombre de la imagen es: {{vars.photoInfo.filename}}. La URL cisco spark para trabajar es: {{vars.photoInfo.ciscoSparkUrl}}'
