@@ -2,6 +2,7 @@ var validator = require("email-validator");
 var date_format = require('dateformat');
 fs = require('fs');
 const exec = require('child_process').exec;
+
 module.exports = function (controller) {
 
     controller.hears(['jugar'], 'direct_message,direct_mention', function (bot, message) {
@@ -24,7 +25,7 @@ module.exports = function (controller) {
             });
 
             convo.addMessage({
-                text: `Tu nombre es: {{vars.name}}`,
+                text: `Hola {{vars.name}}`,
                 action: 'ask-Email'
             }, 'say-name');
 
@@ -52,7 +53,7 @@ module.exports = function (controller) {
             }, 'eMailerrorThread');
 
             convo.addMessage({
-                text: `{{vars.name}}, Tu correo es: {{vars.eMail}}`,
+                text: `Muchas gracias {{vars.name}}.`,
                 action: 'ask-photo'
             }, 'say-eMail');
 
@@ -108,10 +109,11 @@ module.exports = function (controller) {
                 var sticker_command_first = 'convert public/AttachedFiles/mask_col.png \( "' + sticker_photo_input + '" -resize 1536x2048^ \) -compose overlay -composite public/AttachedFiles/mask_col.png -composite public/AttachedFiles/outtemp.png';
 
                 var sticker_command_last = 'convert public/AttachedFiles/outtemp.png -font Whitney-Semibold -weight 700  -pointsize 70 -draw "fill black text 300,1860 \'' + convo.vars.name.toUpperCase();
-                sticker_command_last += '\' " -pointsize 50 -draw "gravity northeast fill black text 100,1900 \'' + 'CALLTECH S.A.';
-                sticker_command_last += '\' " -pointsize 50 -draw "gravity northeast fill black text 800,1710 \'' + '20-04-2018';
+                sticker_command_last += '\' " -pointsize 50 -draw "gravity northeast fill black text 100,1900 \'' + 'NEXT GENERATION MEETINGS';
+                sticker_command_last += '\' " -pointsize 50 -draw "gravity northeast fill black text 800,1710 \'' + '26-04-2018';
                 sticker_command_last += '\' " -pointsize 50 -draw "gravity northeast fill black text 200,315 \'' + '2018';
                 sticker_command_last += '\' " ' + sticker_photo_output;
+                var crash;
 
                 //
                 // Execute the first command
@@ -138,37 +140,116 @@ module.exports = function (controller) {
                                 //
                                 // Save the Sticker Image
                                 //
-                                convo.setVar('internalUrlSticker', `${process.env.PUBLIC_URL}/${convo.vars.internalPhotoFileName.slice(0, -4)}_sticker.png`);  
-                                var dummy;                              
+                                convo.setVar('internalUrlSticker', `${process.env.PUBLIC_URL}/${convo.vars.internalPhotoFileName.slice(0, -4)}_sticker.png`);
+                                var resp = writeTemp(`${process.env.PUBLIC_URL}/${convo.vars.internalPhotoFileName.slice(0, -4)}_sticker.png`);
 
+                                crash = error !== null;
                                 if (error !== null) {
                                     console.log(`exec error: ${error}`);
                                     convo.gotoThread('error-photo');
+                                    crash = true;
+                                }
+                                else {
+                                    next();
                                 }
                             });
-
+                        crash = error !== null;
                         if (error !== null) {
                             console.log(`exec error: ${error}`);
                             convo.gotoThread('error-photo');
                         }
-                        else{
-                            next();
+                    });
+                // }).catch(function (err) {
+                //     convo.setVar('error', err);
+                //     convo.gotoThread('error-photo');
+                //     next(err); // pass an error because we changed threads again during this transition
+            });
+
+
+            convo.addMessage({
+                text: '{{vars.name}}, <BR/>La URL interna de la foto es: {{vars.internalUrlPhoto}} <BR/>La URL del Sticker es: {{vars.internalUrlSticker}}',
+                action: 'saveToDB'
+                //files: [`${fs.readFileSync('./public/AttachedFiles/Temp.txt')}`]
+            }, 'confirm-photo');
+
+
+            convo.beforeThread('saveToDB', function (convo, next) {
+
+                // do something complex here
+                var Connection = require('tedious').Connection;
+                var config = {
+                    userName: 'sa',
+                    password: 'calltech',
+                    server: '192.168.0.70'
+                };
+                var connection = new Connection(config);
+                connection.on('connect', function (err) {
+                    // If no error, then good to proceed.  
+                    console.log("Connected");
+                    //executeStatement1();  
+
+                    request = new Request(`INSERT [FutBot].[dbo].[Participantes] (Nombre, Correo, Url, FotoCromo, Descripcion) VALUES (@Nombre, @Correo, @Url, @FotoCromo, @Descripcion);`, function (err) {
+                        if (err) {
+                            console.log(err);
+                            convo.gotoThread('seMamo');
                         }
                     });
-                
+                    request.addParameter('Nombre', TYPES.VarChar, convo.vars.name);
+                    request.addParameter('Correo', TYPES.VarChar, convo.vars.eMail);
+                    request.addParameter('Url', TYPES.VarChar, convo.vars.internalUrlPhoto);
+                    request.addParameter('FotoCromo', TYPES.VarChar, convo.vars.internalUrlSticker);
+                    request.addParameter('Descripcion', TYPES.VarChar, 'Evento Logicalis');
+                    request.on('row', function (columns) {
+                        columns.forEach(function (column) {
+                            if (column.value === null) {
+                                console.log('NULL');
+                            } else {
+                                console.log("Product id of inserted item is " + column.value);
+                            }
+                        });
+                    });
+                    connection.execSql(request);
 
-            }).catch(function (err) {
-                convo.setVar('error', err);
-                convo.gotoThread('error-photo');
-                next(err); // pass an error because we changed threads again during this transition
+                    next();
+                });
+                // connection.on('LoggedIn', function (err) {
+                //     // If no error, then good to proceed.  
+                //     console.log("LoggedIn");
+                //     executeStatement1();  
+                // });
+                var Request = require('tedious').Request;
+                var TYPES = require('tedious').TYPES;
+
+                // function executeStatement1() {
+
+
+                // }
+
             });
 
             convo.addMessage({
-                text: '{{vars.name}}, <BR/>La URL interna de la foto es: {{vars.internalUrlPhoto}}. <BR/>La URL del Sticker es: {{vars.internalUrlSticker}}'
-            }, 'confirm-photo');
+                text: 'SE MAMÓ'
+                //files: [`${fs.readFileSync('./public/AttachedFiles/Temp.txt')}`]
+            }, 'seMamo');
+
+            convo.addMessage({
+                text: 'Datos Guardados'
+                //files: [`${fs.readFileSync('./public/AttachedFiles/Temp.txt')}`]
+            }, 'saveToDB');
 
             // now, define a function that will be called AFTER the `default` thread ends and BEFORE the `completed` thread begins
 
+            // capture the results of the conversation and see what happened...
+            convo.on('end', function (convo) {
+
+                if (convo.successful()) {
+                    // this still works to send individual replies...
+                    bot.reply(message, { text:'No olvides compartir tu lámina virtual en tus redes sociales.', files: [convo.vars.internalUrlSticker] });
+
+                    // and now deliver cheese via tcp/ip...
+                }
+
+            });
 
         })
     });
@@ -180,6 +261,15 @@ function writePhoto(path, filename, buffer) {
         if (err) throw err;
         console.log('It\'s saved!');
 
+    });
+
+    return true;
+}
+
+function writeTemp(content) {
+    fs.writeFile('public/AttachedFiles/Temp.txt', content, function (err) {
+        if (err) throw err;
+        console.log('Temp.txt saved!');
     });
 
     return true;

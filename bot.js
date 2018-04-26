@@ -115,7 +115,7 @@ if (process.env.studio_token) {
             });
         }
         if (message.text) {
-            bot.reply(message, { text: 'Hello', markdown: '*Hello!*' });
+            bot.reply(message, { text: 'Hola', markdown: '*Hola!*' });
             //bot.reply(message,{text:'Here is your image file of Abel Aguilar!', files:['https://paninistickeralbum.fifa.com/assets/images/stickers/large/377-41b2c6986cf8155c2252b8d01d573099482fc53762e59591cddb2d88f5c4f3a3.jpg']});
             controller.studio.runTrigger(bot, message.text, message.user, message.channel, message).then(function (convo) {
                 if (!convo) {
